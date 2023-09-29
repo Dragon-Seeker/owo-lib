@@ -7,3 +7,8 @@ transitive-accessible class net/minecraft/item/ItemGroup$Entries
 transitive-accessible class net/minecraft/item/ItemGroup$EntriesImpl
 
 transitive-accessible class net/minecraft/client/gui/DrawContext$ScissorStack
+
+accessible method net/minecraft/nbt/NbtCompound <init> (Ljava/util/Map;)V
+accessible method net/minecraft/nbt/NbtCompound toMap ()Ljava/util/Map;
+
+accessible field net/minecraft/util/dynamic/ForwardingDynamicOps delegate Lcom/mojang/serialization/DynamicOps;
