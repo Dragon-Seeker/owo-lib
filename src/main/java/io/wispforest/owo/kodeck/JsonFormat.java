@@ -2,16 +2,13 @@ package io.wispforest.owo.kodeck;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import net.minecraft.nbt.NbtElement;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class JsonFormat implements Format<JsonElement> {
+public final class JsonFormat implements KodeckableFormat<JsonElement> {
 
     public static JsonFormat INSTANCE = new JsonFormat();
 
@@ -21,44 +18,10 @@ public class JsonFormat implements Format<JsonElement> {
 
     private static final TypeToken<List<JsonElement>> LIST_TYPE_TOKEN = new TypeToken<>(){};
 
-//    public <U> U convertTo(Format<U> outFormat, JsonElement input) {
-//        if (outFormat instanceof JsonFormat) {
-//            return (U)input;
-//        } else if (input instanceof JsonObject jsonObject) {
-//            Map<String, U> map = (Map)this.getStringBasedMap(jsonObject)
-//                    .entrySet()
-//                    .stream()
-//                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> this.convertTo(outFormat, (JsonElement)entry.getValue())));
-//            return (U)outFormat.createStringBasedMap(map);
-//        } else if (input instanceof JsonArray jsonArray) {
-//            List<U> list = this.getList(jsonArray).stream().map(element -> this.convertTo(outFormat, element)).toList();
-//            return (U)outFormat.createList(list);
-//        } else if (input instanceof JsonPrimitive primitive) {
-//            if (primitive.isString()) {
-//                return (U)outFormat.createString(primitive.getAsString());
-//            } else if (primitive.isBoolean()) {
-//                return (U)outFormat.createBoolean(primitive.getAsBoolean());
-//            } else {
-//                BigDecimal value = primitive.getAsBigDecimal();
-//
-//                try {
-//                    long l = value.longValueExact();
-//                    if ((long)((byte)((int)l)) == l) {
-//                        return (U)outFormat.createByte((byte)((int)l));
-//                    } else if ((long)((short)((int)l)) == l) {
-//                        return (U)outFormat.createShort((short)((int)l));
-//                    } else {
-//                        return (U)((long)((int)l) == l ? outFormat.createInt((int)l) : outFormat.createLong(l));
-//                    }
-//                } catch (ArithmeticException var10) {
-//                    double d = value.doubleValue();
-//                    return (U)((double)((float)d) == d ? outFormat.createFloat((float)d) : outFormat.createDouble(d));
-//                }
-//            }
-//        } else {
-//            throw new IllegalStateException("Unknown JsonElement Object: " + input);
-//        }
-//    }
+    @Override
+    public FormatKodeck<JsonElement> getFormatKodeck() {
+        return (FormatKodeck<JsonElement>) Kodeck.JSON_ELEMENT;
+    }
 
     //--
 
@@ -109,6 +72,8 @@ public class JsonFormat implements Format<JsonElement> {
 
     @Override
     public JsonElement createStringBasedMap(int size, JsonElement prefix) {
+        if(prefix instanceof JsonObject prefixObject) return prefixObject;
+
         return new JsonObject();
     }
 
@@ -121,6 +86,8 @@ public class JsonFormat implements Format<JsonElement> {
 
     @Override
     public JsonElement createList(int size, JsonElement prefix) {
+        if(prefix instanceof JsonArray prefixArray) return prefixArray;
+
         return new JsonArray();
     }
 

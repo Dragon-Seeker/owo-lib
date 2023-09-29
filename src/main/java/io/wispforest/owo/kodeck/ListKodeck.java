@@ -1,12 +1,7 @@
 package io.wispforest.owo.kodeck;
 
-import org.apache.commons.lang3.function.TriFunction;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public interface ListKodeck<V> extends Kodeck<List<V>> {
 
@@ -53,21 +48,6 @@ public interface ListKodeck<V> extends Kodeck<List<V>> {
 
         for (V v : object) {
             ops.addListEntry(entryEncode(ops, v, prefix), listData);
-        }
-
-        return listData;
-    }
-
-    static <E, V> List<V> getList(BiFunction<Format<E>, E, V> decodeFunc, Format<E> ops, E object){
-        return ops.getList(object).map(e -> decodeFunc.apply(ops, e)).toList();
-    }
-
-
-    static <V, T> T handleList(TriFunction<Format<T>, V, T, T> encodeFunc, Format<T> ops, List<V> object, T prefix){
-        var listData = ops.createList(object.size(), prefix);
-
-        for (V v : object) {
-            ops.addListEntry(encodeFunc.apply(ops, v, prefix), listData);
         }
 
         return listData;

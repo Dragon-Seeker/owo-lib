@@ -31,6 +31,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.advancement.AdvancementProgress;
 import net.minecraft.block.Blocks;
@@ -300,7 +301,16 @@ public class Uwu implements ModInitializer {
 
                             source.sendMessage(Text.of("---"));
 
-                            var stackFromJson = Kodeck.ITEM_STACK.decode(JsonFormat.INSTANCE, stackJsonData);
+                            ItemStack stackFromJson;
+
+                            try {
+                                stackFromJson = Kodeck.ITEM_STACK.decode(JsonFormat.INSTANCE, stackJsonData);
+                            } catch (Exception exception){
+                                source.sendMessage(Text.of(exception.getMessage()));
+                                source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
+
+                                return 0;
+                            }
 
                             source.sendMessage(Text.of(stackFromJson.toString()));
                             source.sendMessage(Text.of(String.valueOf(stackFromJson.getOrCreateNbt())));
@@ -320,11 +330,35 @@ public class Uwu implements ModInitializer {
 
                             var stackByteData = Kodeck.ITEM_STACK.encode(PacketBufFormat.INSTANCE, stack);
 
-                            source.sendMessage(Text.of(stackByteData.toString()));
+                            source.sendMessage(Text.of(String.valueOf(stackByteData.writerIndex())));
 
                             source.sendMessage(Text.of("---"));
 
                             var stackFromByte = Kodeck.ITEM_STACK.decode(PacketBufFormat.INSTANCE, stackByteData);
+
+                            source.sendMessage(Text.of(stackFromByte.toString()));
+                            source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
+                        }
+
+                        {
+                            var buf = PacketByteBufs.create();
+
+                            if (source.getPlayer() == null) return 0;
+
+                            ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
+
+                            source.sendMessage(Text.of(stack.toString()));
+                            source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
+
+                            source.sendMessage(Text.of("---"));
+
+                            buf.writeItemStack(stack);
+
+                            source.sendMessage(Text.of(String.valueOf(buf.writerIndex())));
+
+                            source.sendMessage(Text.of("---"));
+
+                            var stackFromByte = buf.readItemStack();
 
                             source.sendMessage(Text.of(stackFromByte.toString()));
                             source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));

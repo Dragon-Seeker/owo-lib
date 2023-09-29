@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class PacketBufFormat implements Format<PacketByteBuf> {
+public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     public static PacketBufFormat INSTANCE = new PacketBufFormat();
 

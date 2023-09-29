@@ -2,14 +2,11 @@ package io.wispforest.owo.kodeck;
 
 import net.minecraft.nbt.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class NbtFormat implements Format<NbtElement> {
+public final class NbtFormat implements KodeckableFormat<NbtElement> {
 
     public static NbtFormat SAFE = new NbtFormat(false);
     public static NbtFormat UNSAFE = new NbtFormat(true);
@@ -20,31 +17,10 @@ public final class NbtFormat implements Format<NbtElement> {
         this.unsafe = unsafe;
     }
 
-//    public <U> U convertTo(Format<U> outFormat, NbtElement nbtElement) {
-//        if (outFormat instanceof NbtFormat) {
-//            return (U)nbtElement;
-//        } else {
-//            return (U)(switch(nbtElement.getType()) {
-//                case 0 -> outFormat.empty();
-//                case 1 -> outFormat.createByte(((AbstractNbtNumber)nbtElement).byteValue());
-//                case 2 -> outFormat.createShort(((AbstractNbtNumber)nbtElement).shortValue());
-//                case 3 -> outFormat.createInt(((AbstractNbtNumber)nbtElement).intValue());
-//                case 4 -> outFormat.createLong(((AbstractNbtNumber)nbtElement).longValue());
-//                case 5 -> outFormat.createFloat(((AbstractNbtNumber)nbtElement).floatValue());
-//                case 6 -> outFormat.createDouble(((AbstractNbtNumber)nbtElement).doubleValue());
-//                default -> throw new IllegalStateException("Unknown tag type: " + nbtElement);
-//                case 8 -> outFormat.createString(nbtElement.asString());
-//                case 10 -> {
-//                    Map<String, U> map = (Map)this.getStringBasedMap(nbtElement)
-//                            .entrySet()
-//                            .stream()
-//                            .collect(Collectors.toMap(Map.Entry::getKey, entry -> this.convertTo(outFormat, (NbtElement)entry.getValue())));
-//                    yield outFormat.createStringBasedMap(map);
-//                }
-//                case 15 -> outFormat.createList(this.getList(nbtElement).stream().map(element -> this.convertTo(outFormat, element)).toList());
-//            });
-//        }
-//    }
+    @Override
+    public FormatKodeck<NbtElement> getFormatKodeck() {
+        return (FormatKodeck<NbtElement>) Kodeck.NBT_ELEMENT;
+    }
 
     //--
 
@@ -95,6 +71,8 @@ public final class NbtFormat implements Format<NbtElement> {
 
     @Override
     public NbtElement createStringBasedMap(int size, NbtElement prefix) {
+        if(prefix instanceof NbtCompound prefixCompound) return prefixCompound;
+
         return new NbtCompound();
     }
 
@@ -105,6 +83,8 @@ public final class NbtFormat implements Format<NbtElement> {
 
     @Override
     public NbtElement createList(int size, NbtElement prefix) {
+        if(prefix instanceof NbtList prefixList) return prefixList;
+
         return new NbtList();
     }
 
