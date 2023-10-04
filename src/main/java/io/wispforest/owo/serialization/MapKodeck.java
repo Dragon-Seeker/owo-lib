@@ -1,10 +1,8 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization;
 
-import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public interface MapKodeck<K, V> extends Kodeck<Map<K, V>> {
@@ -110,10 +108,12 @@ public interface MapKodeck<K, V> extends Kodeck<Map<K, V>> {
     default <E> E encode(Format<E> ops, Map<K, V> object, E prefix) {
         E mapElement = ops.createStringBasedMap(object.size(), prefix);
 
+        RecursiveLogger.DataAccessHelper helper = null;
         object.forEach((k, v) -> {
             ops.addMapEntry(fromKey(k), () -> valueEncode(ops, v, prefix), mapElement);
         });
 
+        if(helper != null) helper.pop();
         return mapElement;
     }
 }

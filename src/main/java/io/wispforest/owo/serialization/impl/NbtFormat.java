@@ -1,12 +1,15 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization.impl;
 
+import io.wispforest.owo.serialization.impl.kodecks.FormatKodeck;
+import io.wispforest.owo.serialization.Kodeck;
+import io.wispforest.owo.serialization.StructuredFormat;
 import net.minecraft.nbt.*;
 
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public final class NbtFormat implements KodeckableFormat<NbtElement> {
+public final class NbtFormat implements StructuredFormat<NbtElement, NbtCompound> {
 
     public static NbtFormat SAFE = new NbtFormat(false);
     public static NbtFormat UNSAFE = new NbtFormat(true);
@@ -186,5 +189,32 @@ public final class NbtFormat implements KodeckableFormat<NbtElement> {
         if(unsafe) return Stream.of();
 
         throw new RuntimeException("[NbtFormat] input was not NbtList");
+    }
+
+    //--
+
+
+    @Override
+    public NbtElement get(NbtCompound map, String key) {
+        return map.get(key);
+    }
+
+    @Override
+    public NbtElement put(NbtCompound map, String key, NbtElement value) {
+        return map.put(key, value);
+    }
+
+    @Override
+    public NbtElement delete(NbtCompound map, String key) {
+        var value = map.get(key);
+
+        map.remove(key);
+
+        return value;
+    }
+
+    @Override
+    public boolean contains(NbtCompound map, String key) {
+        return false;
     }
 }

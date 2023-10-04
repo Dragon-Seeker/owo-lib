@@ -1,4 +1,4 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization;
 
 import java.util.List;
 import java.util.function.Function;

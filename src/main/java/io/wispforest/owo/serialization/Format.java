@@ -1,4 +1,4 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization;
 
 import com.google.gson.JsonElement;
 

@@ -2,6 +2,7 @@ package io.wispforest.uwu;
 
 import blue.endless.jankson.JsonPrimitive;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Streams;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -10,7 +11,6 @@ import io.wispforest.owo.config.Option;
 import io.wispforest.owo.itemgroup.Icon;
 import io.wispforest.owo.itemgroup.OwoItemGroup;
 import io.wispforest.owo.itemgroup.gui.ItemGroupButton;
-import io.wispforest.owo.kodeck.*;
 import io.wispforest.owo.network.OwoNetChannel;
 import io.wispforest.owo.offline.OfflineAdvancementLookup;
 import io.wispforest.owo.offline.OfflineDataLookup;
@@ -18,6 +18,11 @@ import io.wispforest.owo.particles.ClientParticles;
 import io.wispforest.owo.particles.systems.ParticleSystem;
 import io.wispforest.owo.particles.systems.ParticleSystemController;
 import io.wispforest.owo.registration.reflect.FieldRegistrationHandler;
+import io.wispforest.owo.serialization.*;
+import io.wispforest.owo.serialization.impl.JsonFormat;
+import io.wispforest.owo.serialization.impl.NbtFormat;
+import io.wispforest.owo.serialization.impl.PacketBufFormat;
+import io.wispforest.owo.serialization.impl.kodecks.FormatKodeck;
 import io.wispforest.owo.text.CustomTextRegistry;
 import io.wispforest.owo.ui.core.Color;
 import io.wispforest.owo.util.RegistryAccess;
@@ -42,7 +47,9 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -60,6 +67,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.LongStream;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -229,140 +238,182 @@ public class Uwu implements ModInitializer {
 
                         //--
 
-                        String testPhrase = "This is a test to see how kodeck dose.";
-
-                        source.sendMessage(Text.of("Input:  " + testPhrase));
-
-                        var nbtData = Kodeck.STRING.encode(NbtFormat.SAFE, testPhrase);
-                        var fromNbtData = Kodeck.STRING.decode(NbtFormat.SAFE, nbtData);
-
-                        var jsonData = Kodeck.STRING.encode(JsonFormat.INSTANCE, fromNbtData);
-                        var fromJsonData = Kodeck.STRING.decode(JsonFormat.INSTANCE, jsonData);
-
-                        source.sendMessage(Text.of("Output: " + fromJsonData));
-
-                        source.sendMessage(Text.empty());
-
-                        //--
-
-                        int randomNumber = rand.nextInt(20000);
-
-                        source.sendMessage(Text.of("Input:  " + randomNumber));
-
-                        var jsonNum = Kodeck.INT.encode(JsonFormat.INSTANCE, randomNumber);
-
-                        source.sendMessage(Text.of("Output: " + Kodeck.INT.decode(JsonFormat.INSTANCE, jsonNum)));
-
-                        source.sendMessage(Text.empty());
-
-                        //--
-
-                        List<Integer> randomNumbers = new ArrayList<>();
-
-                        var maxCount = rand.nextInt(20);
-
-                        for(int i = 0; i < maxCount; i++){
-                            randomNumbers.add(rand.nextInt(20000));
-                        }
-
-                        source.sendMessage(Text.of("Input:  " + randomNumbers));
-
-                        Kodeck<List<Integer>> INT_LIST_KODECK = ListKodeck.of(Kodeck.INT);
-
-                        var nbtListData = INT_LIST_KODECK.encode(NbtFormat.SAFE, randomNumbers);
-
-                        source.sendMessage(Text.of("Output: " + INT_LIST_KODECK.decode(NbtFormat.SAFE, nbtListData)));
-
-                        source.sendMessage(Text.empty());
+//                        String testPhrase = "This is a test to see how kodeck dose.";
+//
+//                        source.sendMessage(Text.of("Input:  " + testPhrase));
+//
+//                        var nbtData = Kodeck.STRING.encode(NbtFormat.SAFE, testPhrase);
+//                        var fromNbtData = Kodeck.STRING.decode(NbtFormat.SAFE, nbtData);
+//
+//                        var jsonData = Kodeck.STRING.encode(JsonFormat.INSTANCE, fromNbtData);
+//                        var fromJsonData = Kodeck.STRING.decode(JsonFormat.INSTANCE, jsonData);
+//
+//                        source.sendMessage(Text.of("Output: " + fromJsonData));
+//
+//                        source.sendMessage(Text.empty());
+//
+//                        //--
+//
+//                        int randomNumber = rand.nextInt(20000);
+//
+//                        source.sendMessage(Text.of("Input:  " + randomNumber));
+//
+//                        var jsonNum = Kodeck.INT.encode(JsonFormat.INSTANCE, randomNumber);
+//
+//                        source.sendMessage(Text.of("Output: " + Kodeck.INT.decode(JsonFormat.INSTANCE, jsonNum)));
+//
+//                        source.sendMessage(Text.empty());
+//
+//                        //--
+//
+//                        List<Integer> randomNumbers = new ArrayList<>();
+//
+//                        var maxCount = rand.nextInt(20);
+//
+//                        for(int i = 0; i < maxCount; i++){
+//                            randomNumbers.add(rand.nextInt(20000));
+//                        }
+//
+//                        source.sendMessage(Text.of("Input:  " + randomNumbers));
+//
+//                        Kodeck<List<Integer>> INT_LIST_KODECK = ListKodeck.of(Kodeck.INT);
+//
+//                        var nbtListData = INT_LIST_KODECK.encode(NbtFormat.SAFE, randomNumbers);
+//
+//                        source.sendMessage(Text.of("Output: " + INT_LIST_KODECK.decode(NbtFormat.SAFE, nbtListData)));
+//
+//                        source.sendMessage(Text.empty());
 
                         //---
-                        {
-                            if (source.getPlayer() == null) return 0;
+//                        {
+//                            if (source.getPlayer() == null) return 0;
+//
+//                            ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
+//
+//                            source.sendMessage(Text.of(stack.toString()));
+//                            source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
+//
+//                            source.sendMessage(Text.of("---"));
+//
+//                            JsonElement stackJsonData;
+//
+//                            try {
+//                                stackJsonData = Kodeck.ITEM_STACK.encode(JsonFormat.INSTANCE, stack);
+//                            } catch (Exception exception){
+//                                source.sendMessage(Text.of(exception.getMessage()));
+//                                source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
+//
+//                                return 0;
+//                            }
+//
+//                            source.sendMessage(Text.of(stackJsonData.toString()));
+//
+//                            source.sendMessage(Text.of("---"));
+//
+//                            ItemStack stackFromJson;
+//
+//                            try {
+//                                stackFromJson = Kodeck.ITEM_STACK.decode(JsonFormat.INSTANCE, stackJsonData);
+//                            } catch (Exception exception){
+//                                source.sendMessage(Text.of(exception.getMessage()));
+//                                source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
+//
+//                                return 0;
+//                            }
+//
+//                            source.sendMessage(Text.of(stackFromJson.toString()));
+//                            source.sendMessage(Text.of(String.valueOf(stackFromJson.getOrCreateNbt())));
+//                        }
 
+//                        source.sendMessage(Text.empty());
+
+                        if (source.getPlayer() == null) return 0;
+
+                        //Vanilla
+                        iterations((buf) -> {
                             ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
 
-                            source.sendMessage(Text.of(stack.toString()));
-                            source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
+                            //source.sendMessage(Text.of(stack.toString()));
+                            //source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
 
-                            source.sendMessage(Text.of("---"));
+                            //source.sendMessage(Text.of("---"));
 
-                            JsonElement stackJsonData;
-
-                            try {
-                                stackJsonData = Kodeck.ITEM_STACK.encode(JsonFormat.INSTANCE, stack);
-                            } catch (Exception exception){
-                                source.sendMessage(Text.of(exception.getMessage()));
-                                source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
-
-                                return 0;
-                            }
-
-                            source.sendMessage(Text.of(stackJsonData.toString()));
-
-                            source.sendMessage(Text.of("---"));
-
-                            ItemStack stackFromJson;
-
-                            try {
-                                stackFromJson = Kodeck.ITEM_STACK.decode(JsonFormat.INSTANCE, stackJsonData);
-                            } catch (Exception exception){
-                                source.sendMessage(Text.of(exception.getMessage()));
-                                source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
-
-                                return 0;
-                            }
-
-                            source.sendMessage(Text.of(stackFromJson.toString()));
-                            source.sendMessage(Text.of(String.valueOf(stackFromJson.getOrCreateNbt())));
-                        }
-
-                        source.sendMessage(Text.empty());
-
-                        {
-                            if (source.getPlayer() == null) return 0;
-
-                            ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
-
-                            source.sendMessage(Text.of(stack.toString()));
-                            source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
-
-                            source.sendMessage(Text.of("---"));
-
-                            var stackByteData = Kodeck.ITEM_STACK.encode(PacketBufFormat.INSTANCE, stack);
-
-                            source.sendMessage(Text.of(String.valueOf(stackByteData.writerIndex())));
-
-                            source.sendMessage(Text.of("---"));
-
-                            var stackFromByte = Kodeck.ITEM_STACK.decode(PacketBufFormat.INSTANCE, stackByteData);
-
-                            source.sendMessage(Text.of(stackFromByte.toString()));
-                            source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
-                        }
-
-                        {
-                            var buf = PacketByteBufs.create();
-
-                            if (source.getPlayer() == null) return 0;
-
-                            ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
-
-                            source.sendMessage(Text.of(stack.toString()));
-                            source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
-
-                            source.sendMessage(Text.of("---"));
+                            var startTest = System.nanoTime();
 
                             buf.writeItemStack(stack);
 
-                            source.sendMessage(Text.of(String.valueOf(buf.writerIndex())));
+                            //source.sendMessage(Text.of(String.valueOf(buf.writerIndex())));
 
-                            source.sendMessage(Text.of("---"));
+                            //source.sendMessage(Text.of("---"));
 
                             var stackFromByte = buf.readItemStack();
 
-                            source.sendMessage(Text.of(stackFromByte.toString()));
-                            source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
+                            //source.sendMessage(Text.of(stackFromByte.toString()));
+                            //source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
+                        });
+
+                        //Kodeck
+                        try {
+                            iterations((buf) -> {
+                                ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
+
+                                //source.sendMessage(Text.of(stack.toString()));
+                                //source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
+
+                                //source.sendMessage(Text.of("---"));
+
+                                var stackByteData = Kodeck.ITEM_STACK.encode(PacketBufFormat.INSTANCE, stack, buf);
+
+                                //source.sendMessage(Text.of(String.valueOf(stackByteData.writerIndex())));
+
+                                //source.sendMessage(Text.of("---"));
+
+                                ItemStack stackFromByte;
+
+                                stackFromByte = Kodeck.ITEM_STACK.decode(PacketBufFormat.INSTANCE, stackByteData);
+
+                                //source.sendMessage(Text.of(stackFromByte.toString()));
+                                //.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
+                            });
+                        } catch (Exception exception){
+                            source.sendMessage(Text.of(exception.getMessage()));
+                            source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
+
+                            return 0;
                         }
+
+                        //Kodeck Optimization
+                        try {
+                            iterations((buf) -> {
+                                ItemStack stack = source.getPlayer().getStackInHand(Hand.MAIN_HAND);
+
+                                //source.sendMessage(Text.of(stack.toString()));
+                                //source.sendMessage(Text.of(String.valueOf(stack.getOrCreateNbt())));
+
+                                //source.sendMessage(Text.of("---"));
+
+                                var stackByteData = Kodeck.ITEM_STACK.encode(PacketBufFormat.INSTANCE, stack, buf);
+
+                                //System.out.println(PacketBufFormat.INSTANCE.getLoggedData());
+
+                                //source.sendMessage(Text.of(String.valueOf(stackByteData.writerIndex())));
+
+                                //source.sendMessage(Text.of("---"));
+
+                                ItemStack stackFromByte;
+
+                                stackFromByte = Kodeck.ITEM_STACK.decode(PacketBufFormat.INSTANCE, stackByteData);
+
+                                //source.sendMessage(Text.of(stackFromByte.toString()));
+                                //source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
+                            });
+                        } catch (Exception exception){
+                            source.sendMessage(Text.of(exception.getMessage()));
+                            source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
+
+                            return 0;
+                        }
+
                         //--
 
                         return 0;
@@ -373,6 +424,43 @@ public class Uwu implements ModInitializer {
 
         UwuNetworkExample.init();
         UwuOptionalNetExample.init();
+    }
+
+    public static void iterations(Consumer<PacketByteBuf> consumer){
+        int iterationTotal = 50;
+
+        List<Long> iterations = new ArrayList<>();
+        List<Integer> byteBufIndexes = new ArrayList<>();
+
+        for(int i1 = 0; i1 < 3; i1++){
+            for(int i = 0; i < iterationTotal; i++){
+                var buf = PacketByteBufs.create();
+
+                var startTest = System.nanoTime();
+
+                consumer.accept(buf);
+
+                iterations.add(System.nanoTime() - startTest);
+
+                byteBufIndexes.add(buf.writerIndex());
+
+//            buf.clear();
+//            buf.resetWriterIndex();
+            }
+
+            System.out.println(((Streams.stream(iterations).mapToLong(v -> v).sum() / (float) iterationTotal) / 1000000));
+            System.out.println(Streams.stream(byteBufIndexes).mapToInt(i -> i).max().getAsInt());
+
+            iterations.clear();
+            byteBufIndexes.clear();
+        }
+
+        System.out.println();
+
+
+//        System.out.println("It took on average [" + ((Streams.stream(iterations).mapToLong(v -> v).sum() / (float) iterationTotal) / 1000000) + "] Milliseconds to complete such!");
+//        System.out.println("Biggest Buf size was: [" + Streams.stream(byteBufIndexes).mapToInt(i -> i).max().getAsInt() + "]");
+        //System.out.println(byteBufIndexes);
     }
 
     public record OtherTestMessage(BlockPos pos, String message) {}

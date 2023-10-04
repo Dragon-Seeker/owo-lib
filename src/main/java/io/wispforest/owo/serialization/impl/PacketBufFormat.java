@@ -1,6 +1,7 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization.impl;
 
 import com.google.common.collect.Streams;
+import io.wispforest.owo.serialization.Format;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 

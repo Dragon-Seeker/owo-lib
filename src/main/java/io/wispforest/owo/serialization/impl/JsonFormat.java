@@ -1,14 +1,17 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization.impl;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import io.wispforest.owo.serialization.impl.kodecks.FormatKodeck;
+import io.wispforest.owo.serialization.Kodeck;
+import io.wispforest.owo.serialization.StructuredFormat;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public final class JsonFormat implements KodeckableFormat<JsonElement> {
+public final class JsonFormat implements StructuredFormat<JsonElement, JsonObject> {
 
     public static JsonFormat INSTANCE = new JsonFormat();
 
@@ -21,6 +24,30 @@ public final class JsonFormat implements KodeckableFormat<JsonElement> {
     @Override
     public FormatKodeck<JsonElement> getFormatKodeck() {
         return (FormatKodeck<JsonElement>) Kodeck.JSON_ELEMENT;
+    }
+
+    @Override
+    public JsonElement get(JsonObject map, String key) {
+        return map.get(key);
+    }
+
+    @Override
+    public JsonElement put(JsonObject map, String key, JsonElement value) {
+        var oldValue = map.get(key);
+
+        map.add(key, value);
+
+        return oldValue;
+    }
+
+    @Override
+    public JsonElement delete(JsonObject map, String key) {
+        return map.remove(key);
+    }
+
+    @Override
+    public boolean contains(JsonObject map, String key) {
+        return map.has(key);
     }
 
     //--
@@ -99,7 +126,6 @@ public final class JsonFormat implements KodeckableFormat<JsonElement> {
     }
 
     //--
-
 
     @Override
     public boolean getBoolean(JsonElement input) {

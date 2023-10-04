@@ -1,10 +1,14 @@
-package io.wispforest.owo.kodeck;
+package io.wispforest.owo.serialization.impl.kodecks;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import io.wispforest.owo.serialization.Format;
+import io.wispforest.owo.serialization.Kodeck;
+import io.wispforest.owo.serialization.impl.JsonFormat;
+import io.wispforest.owo.serialization.impl.NbtFormat;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.util.dynamic.ForwardingDynamicOps;
 import org.jetbrains.annotations.Nullable;
