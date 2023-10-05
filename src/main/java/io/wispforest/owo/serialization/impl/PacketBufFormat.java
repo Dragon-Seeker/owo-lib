@@ -120,6 +120,16 @@ public final class PacketBufFormat extends RecursiveLogger implements Format<Pac
         return prefix;
     }
 
+    @Override
+    public PacketByteBuf createSequence(PacketByteBuf prefix) {
+        return prefix;
+    }
+
+    @Override
+    public PacketByteBuf addSequenceEntry(String key, PacketByteBuf entry, PacketByteBuf prefix) {
+        return prefix;
+    }
+
     //--
 
     @Override
@@ -174,6 +184,11 @@ public final class PacketBufFormat extends RecursiveLogger implements Format<Pac
         var entryTotal = input.readVarInt();
 
         return Streams.stream(new CursedIterator<>(entryTotal, input));
+    }
+
+    @Override
+    public PacketByteBuf getSequenceEntry(String key, PacketByteBuf input) {
+        return input;
     }
 
     public record CursedMapEntry(PacketByteBuf input) implements Map.Entry<String, PacketByteBuf>{

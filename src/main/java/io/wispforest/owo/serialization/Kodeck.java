@@ -200,71 +200,9 @@ public interface Kodeck<T> {
         return mapOf(keyKodeck, valueKodeck, HashMap::new);
     }
 
-    static <L, R> Kodeck<Pair<L, R>> pairOf(Kodeck<L> leftKodeck, Kodeck<R> rightKodeck){
-        return new Kodeck<>() {
-            @Override
-            public <E> Pair<L, R> decode(Format<E> ops, E object) {
-                var pair = new Pair<L, R>(null, null);
-
-                ops.getStringBasedMap(object).forEach(entry -> {
-                    if (Objects.equals(entry.getKey(), "l")) {
-                        pair.setLeft(leftKodeck.decode(ops, entry.getValue()));
-                    } else if (Objects.equals(entry.getKey(), "r")) {
-                        pair.setRight(rightKodeck.decode(ops, entry.getValue()));
-                    }
-                });
-
-                return pair;
-            }
-
-            @Override
-            public <E> E encode(Format<E> ops, Pair<L, R> object, E prefix) {
-                E map = ops.createStringBasedMap(2, prefix);
-
-                ops.addMapEntry("l", () -> leftKodeck.encode(ops, object.getLeft(), prefix), map);
-                ops.addMapEntry("r", () -> rightKodeck.encode(ops, object.getRight(), prefix), map);
-
-                return map;
-            }
-        };
-    };
-
     default Kodeck<Optional<T>> optionalOf(){
         return CascadeKodeck.optionalOf(this);
     }
-
-//    static <T> Kodeck<Optional<T>> optionalOf(Kodeck<T> kodeck){
-//        return new Kodeck<>() {
-//            @Override
-//            public <E> Optional<T> decode(Format<E> ops, E object) {
-//                MutableBoolean isPresent = new MutableBoolean();
-//
-//                MutableObject<T> value = new MutableObject<>(null);
-//
-//                ops.getStringBasedMap(object).forEach(entry -> {
-//                    if (Objects.equals(entry.getKey(), "present")) {
-//                        isPresent.setValue(Kodeck.BOOLEAN.decode(ops, entry.getValue()));
-//                    } else if (Objects.equals(entry.getKey(), "value") && isPresent.getValue()) {
-//                        value.setValue(kodeck.decode(ops, entry.getValue()));
-//                    }
-//                });
-//
-//                return Optional.ofNullable(value.getValue());
-//            }
-//
-//            @Override
-//            public <E> E encode(Format<E> ops, Optional<T> object, E prefix) {
-//                E map = ops.createStringBasedMap(2, prefix);
-//
-//                var present = object.isPresent();
-//
-//                ops.addMapEntry("present", () -> Kodeck.BOOLEAN.encode(ops, present, prefix), map);
-//                ops.addMapEntry("value", () -> present ? kodeck.encode(ops, object.get(), prefix) : ops.empty(), map);
-//
-//                return map;
-//            }
-//        };
-//    }
 
     static <K, V> Kodeck<Map<K, V>> mapOf(Kodeck<K> keyKodeck, Kodeck<V> valueKodeck, Supplier<Map<K, V>> supplier){
         Kodeck<Map.Entry<K, V>> mapEntryKodeck = new Kodeck<>() {
@@ -303,9 +241,7 @@ public interface Kodeck<T> {
             for (Map.Entry<K, V> entry : entries) map.put(entry.getKey(), entry.getValue());
 
             return map;
-        }, kvMap -> {
-            return List.copyOf(kvMap.entrySet());
-        });
+        }, kvMap -> List.copyOf(kvMap.entrySet()));
     }
 
     static <T> Kodeck<T> ofRegistry(Registry<T> registry) {

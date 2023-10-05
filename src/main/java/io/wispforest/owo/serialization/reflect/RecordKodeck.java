@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import io.wispforest.owo.Owo;
 import io.wispforest.owo.serialization.Format;
 import io.wispforest.owo.serialization.Kodeck;
+import io.wispforest.owo.serialization.SequenceKodeck;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.lang.invoke.MethodHandle;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class RecordKodeck<R extends Record> implements Kodeck<R> {
+public class RecordKodeck<R extends Record> implements SequenceKodeck<R> {
     private static final Map<Class<?>, RecordKodeck<?>> SERIALIZERS = new HashMap<>();
 
     private final Map<String, RecordEntryHandler<R>> adapters;
@@ -91,14 +92,13 @@ public class RecordKodeck<R extends Record> implements Kodeck<R> {
      * @return The deserialized record
      */
     @Override
-    public <E> R decode(Format<E> ops, E object) {
+    public <E> R decodeObject(SequenceHandler<E> handler) {
         Object[] messageContents = new Object[fieldCount];
 
         var index = new MutableInt();
 
-        ops.getStringBasedMap(object).forEach(entry -> {
-            var adapter = adapters.get(entry.getKey());
-            messageContents[index.getAndIncrement()] = adapter.kodeck.decode(ops, object);
+        adapters.forEach((s, fHandler) -> {
+            messageContents[index.getAndIncrement()] = handler.decodeEntry(s, fHandler.kodeck);
         });
 
         try {
@@ -117,14 +117,8 @@ public class RecordKodeck<R extends Record> implements Kodeck<R> {
      * @param instance The record instance to serialize
      */
     @Override
-    public <E> E encode(Format<E> ops, R instance, E prefix) {
-        E map = ops.createStringBasedMap(adapters.size(), prefix);
-
-        adapters.forEach((s, handler) -> {
-            ops.addMapEntry(s, () -> (E) handler.kodeck.encode(ops, handler.rFunction.apply(instance), prefix), map);
-        });
-
-        return map;
+    public <E> void encodeObject(SequenceHandler<E> handler, R instance) {
+        adapters.forEach((s, fHandler) -> handler.encodeEntry(s, fHandler.kodeck, fHandler.rFunction.apply(instance)));
     }
 
     private record RecordEntryHandler<R>(Function<R, ?> rFunction, Kodeck kodeck) { }

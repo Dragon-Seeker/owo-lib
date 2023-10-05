@@ -1,10 +1,12 @@
 package io.wispforest.owo.serialization;
 
 import com.google.gson.JsonElement;
+import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -38,6 +40,10 @@ public interface Format<T> {
 
     T addListEntry(T input, T prefix);
 
+    T createSequence(T prefix);
+
+    T addSequenceEntry(String key, T entry, T prefix);
+
     //----
 
     boolean getBoolean(T input);
@@ -59,4 +65,7 @@ public interface Format<T> {
     Stream<Map.Entry<String, T>> getStringBasedMap(T input);
 
     Stream<T> getList(T input);
+
+    T getSequenceEntry(String key, T input);
+
 }

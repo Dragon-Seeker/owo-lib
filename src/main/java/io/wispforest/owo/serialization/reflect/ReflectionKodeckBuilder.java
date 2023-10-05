@@ -4,6 +4,7 @@ import io.wispforest.owo.network.serialization.SealedPolymorphic;
 import io.wispforest.owo.serialization.CascadeKodeck;
 import io.wispforest.owo.serialization.Format;
 import io.wispforest.owo.serialization.Kodeck;
+import io.wispforest.owo.serialization.SequenceKodeck;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
@@ -20,6 +21,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -295,38 +297,7 @@ public class ReflectionKodeckBuilder {
 
     @SuppressWarnings("unchecked")
     public static <T, K> Kodeck<T> createDispatchedSerializer(Function<K, Kodeck<? extends T>> keyToKodeck, Function<T, K> keyGetter, Kodeck<K> keyKodeck) {
-        return new Kodeck<>() {
-            @Override
-            public <E> T decode(Format<E> ops, E object) {
-                MutableObject<K> key = new MutableObject<>();
-                MutableObject<T> value = new MutableObject<>();
-
-                ops.getStringBasedMap(object).forEach(entry -> {
-                    if (Objects.equals(entry.getKey(), "present")) {
-                        key.setValue(keyKodeck.decode(ops, entry.getValue()));
-                    } else if (Objects.equals(entry.getKey(), "value")) {
-                        var kodeck = keyToKodeck.apply(key.getValue());
-
-                        value.setValue(kodeck.decode(ops, entry.getValue()));
-                    }
-                });
-
-                return value.getValue();
-            }
-
-            @Override
-            public <E> E encode(Format<E> ops, T object, E prefix) {
-                E map = ops.createStringBasedMap(2, prefix);
-
-                var key = keyGetter.apply(object);
-                Kodeck<T> kodeck = (Kodeck<T>) keyToKodeck.apply(key);
-
-                ops.addMapEntry("key", () -> keyKodeck.encode(ops, key, prefix), map);
-                ops.addMapEntry("value", () -> kodeck.encode(ops, object, prefix), map);
-
-                return map;
-            }
-        };
+        return CascadeKodeck.dispatchedOf(keyToKodeck, keyGetter, keyKodeck);
     }
 
     @SuppressWarnings("unchecked")
@@ -410,7 +381,40 @@ public class ReflectionKodeckBuilder {
         register(ItemStack.class, Kodeck.ITEM_STACK);
         register(Identifier.class, Kodeck.IDENTIFIER);
         register(NbtCompound.class, Kodeck.COMPOUND);
-        register(BlockHitResult.class, PacketByteBuf::writeBlockHitResult, PacketByteBuf::readBlockHitResult);
+        register(
+                BlockHitResult.class,
+                new SequenceKodeck<>() {
+                    final Kodeck<Direction> DIRECTION = createEnumSerializer(Direction.class);
+
+                    @Override
+                    public <E> void encodeObject(SequenceHandler<E> handler, BlockHitResult hitResult) {
+                        BlockPos blockPos = hitResult.getBlockPos();
+                        handler.encodeEntry("blockPos", Kodeck.BLOCK_POS, blockPos);
+                        handler.encodeEntry("side", DIRECTION, hitResult.getSide());
+
+                        Vec3d vec3d = hitResult.getPos();
+                        handler.encodeEntry("x", Kodeck.FLOAT, (float)(vec3d.x - (double)blockPos.getX()));
+                        handler.encodeEntry("x", Kodeck.FLOAT, (float)(vec3d.x - (double)blockPos.getX()));
+                        handler.encodeEntry("x", Kodeck.FLOAT, (float)(vec3d.x - (double)blockPos.getX()));
+                        handler.encodeEntry("inside", Kodeck.BOOLEAN, hitResult.isInsideBlock());
+                    }
+
+                    @Override
+                    public <E> BlockHitResult decodeObject(SequenceHandler<E> handler) {
+                        BlockPos blockPos = handler.decodeEntry("blockPos", Kodeck.BLOCK_POS);
+                        Direction direction = handler.decodeEntry("side", DIRECTION);
+
+                        float f = handler.decodeEntry("x", Kodeck.FLOAT);
+                        float g = handler.decodeEntry("y", Kodeck.FLOAT);
+                        float h = handler.decodeEntry("z", Kodeck.FLOAT);
+
+                        boolean bl = handler.decodeEntry("inside", Kodeck.BOOLEAN);
+                        return new BlockHitResult(
+                                new Vec3d((double)blockPos.getX() + (double)f, (double)blockPos.getY() + (double)g, (double)blockPos.getZ() + (double)h), direction, blockPos, bl
+                        );
+                    }
+                }
+        );
         register(BitSet.class, Kodeck.BITSET);
         register(Text.class, Kodeck.TEXT);
 

@@ -1,9 +1,11 @@
 package io.wispforest.owo.serialization.impl;
 
+import io.wispforest.owo.serialization.Format;
 import io.wispforest.owo.serialization.impl.kodecks.FormatKodeck;
 import io.wispforest.owo.serialization.Kodeck;
 import io.wispforest.owo.serialization.StructuredFormat;
 import net.minecraft.nbt.*;
+import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.Map;
 import java.util.function.Supplier;
