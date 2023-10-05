@@ -1,5 +1,8 @@
 package io.wispforest.owo.serialization;
 
+import io.wispforest.owo.serialization.impl.RecursiveLogger;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -46,9 +49,17 @@ public interface ListKodeck<V> extends Kodeck<List<V>> {
     default <E> E encode(Format<E> ops, List<V> object, E prefix) {
         var listData = ops.createList(object.size(), prefix);
 
+        RecursiveLogger.DataAccessHelper helper = null;
+
+        if(ops instanceof RecursiveLogger logger){
+            helper = logger.makeDataAccessHelper("listsize" + object.size(), ArrayList::new);
+        }
+
         for (V v : object) {
             ops.addListEntry(entryEncode(ops, v, prefix), listData);
         }
+
+        if(helper != null) helper.pop();
 
         return listData;
     }

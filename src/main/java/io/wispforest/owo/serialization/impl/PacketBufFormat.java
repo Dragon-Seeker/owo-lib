@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public final class PacketBufFormat implements Format<PacketByteBuf> {
+public final class PacketBufFormat extends RecursiveLogger implements Format<PacketByteBuf> {
 
     public static PacketBufFormat INSTANCE = new PacketBufFormat();
 
@@ -20,6 +20,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createBoolean(boolean value, PacketByteBuf prefix) {
+        if(logData) log("boolean", value);
+
         prefix.writeBoolean(value);
 
         return prefix;
@@ -27,6 +29,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createByte(byte value, PacketByteBuf prefix) {
+        if(logData) log("byte", value);
+
         prefix.writeByte(value);
 
         return prefix;
@@ -34,6 +38,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createShort(short value, PacketByteBuf prefix) {
+        if(logData) log("short", value);
+
         prefix.writeShort(value);
 
         return prefix;
@@ -41,6 +47,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createInt(int value, PacketByteBuf prefix) {
+        if(logData) log("int", value);
+
         prefix.writeInt(value);
 
         return prefix;
@@ -48,6 +56,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createLong(long value, PacketByteBuf prefix) {
+        if(logData) log("long", value);
+
         prefix.writeLong(value);
 
         return prefix;
@@ -55,6 +65,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createFloat(float value, PacketByteBuf prefix) {
+        if(logData) log("float", value);
+
         prefix.writeFloat(value);
 
         return prefix;
@@ -62,6 +74,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createDouble(double value, PacketByteBuf prefix) {
+        if(logData) log("double", value);
+
         prefix.writeDouble(value);
 
         return prefix;
@@ -69,6 +83,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf createString(String value, PacketByteBuf prefix) {
+        if(logData) log("string", value);
+
         prefix.writeString(value);
 
         return prefix;
@@ -83,6 +99,8 @@ public final class PacketBufFormat implements Format<PacketByteBuf> {
 
     @Override
     public PacketByteBuf addMapEntry(String key, Supplier<PacketByteBuf> input, PacketByteBuf prefix) {
+        if(logData) log("mapKey", key);
+
         prefix.writeString(key);
 
         input.get();

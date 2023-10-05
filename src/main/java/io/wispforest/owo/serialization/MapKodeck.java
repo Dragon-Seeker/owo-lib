@@ -1,13 +1,26 @@
 package io.wispforest.owo.serialization;
 
+import io.wispforest.owo.serialization.impl.RecursiveLogger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface MapKodeck<K, V> extends Kodeck<Map<K, V>> {
+
     static <V> MapKodeck<String, V> of(Kodeck<V> valueKodeck) {
+        return of(valueKodeck, null);
+    }
+
+    static <V> MapKodeck<String, V> of(Kodeck<V> valueKodeck, Supplier<Map<String, V>> mapConstructor) {
         return new MapKodeck<>() {
+            @Override
+            public Map<String, V> mapConstructor() {
+                return mapConstructor != null ? mapConstructor.get() : MapKodeck.super.mapConstructor();
+            }
+
             @Override
             public String toKey(String object) {
                 return object;
@@ -28,6 +41,10 @@ public interface MapKodeck<K, V> extends Kodeck<Map<K, V>> {
                 return valueKodeck.encode(ops, object, prefix);
             }
         };
+    }
+
+    default Map<K, V> mapConstructor(){
+        return new HashMap<>();
     }
 
     K toKey(String object);
@@ -92,7 +109,7 @@ public interface MapKodeck<K, V> extends Kodeck<Map<K, V>> {
 
     @Override
     default <E> Map<K, V> decode(Format<E> ops, E object) {
-        Map<K, V> decodeMap = new HashMap<>();
+        Map<K, V> decodeMap = mapConstructor();
 
         ops.getStringBasedMap(object).forEach((entry) -> {
             var key = entry.getKey();
@@ -109,11 +126,17 @@ public interface MapKodeck<K, V> extends Kodeck<Map<K, V>> {
         E mapElement = ops.createStringBasedMap(object.size(), prefix);
 
         RecursiveLogger.DataAccessHelper helper = null;
+
+        if(ops instanceof RecursiveLogger logger){
+            helper = logger.makeDataAccessHelper("mapsize" + object.size(), LinkedHashMap::new);
+        }
+
         object.forEach((k, v) -> {
             ops.addMapEntry(fromKey(k), () -> valueEncode(ops, v, prefix), mapElement);
         });
 
         if(helper != null) helper.pop();
+
         return mapElement;
     }
 }

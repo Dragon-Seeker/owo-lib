@@ -392,6 +392,8 @@ public class Uwu implements ModInitializer {
 
                                 //source.sendMessage(Text.of("---"));
 
+                                ((FormatKodeck) Kodeck.NBT_ELEMENT).dataSaverMode(true);
+
                                 var stackByteData = Kodeck.ITEM_STACK.encode(PacketBufFormat.INSTANCE, stack, buf);
 
                                 //System.out.println(PacketBufFormat.INSTANCE.getLoggedData());
@@ -404,12 +406,16 @@ public class Uwu implements ModInitializer {
 
                                 stackFromByte = Kodeck.ITEM_STACK.decode(PacketBufFormat.INSTANCE, stackByteData);
 
+                                ((FormatKodeck) Kodeck.NBT_ELEMENT).dataSaverMode(false);
+
                                 //source.sendMessage(Text.of(stackFromByte.toString()));
                                 //source.sendMessage(Text.of(String.valueOf(stackFromByte.getOrCreateNbt())));
                             });
                         } catch (Exception exception){
                             source.sendMessage(Text.of(exception.getMessage()));
                             source.sendMessage(Text.of((Arrays.toString(exception.getStackTrace()))));
+
+                            ((FormatKodeck) Kodeck.NBT_ELEMENT).dataSaverMode(false);
 
                             return 0;
                         }
