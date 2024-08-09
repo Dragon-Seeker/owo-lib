@@ -5,8 +5,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public interface OwoItemSettingsExtension {
 
@@ -18,10 +20,21 @@ public interface OwoItemSettingsExtension {
      * @param group The item group this item should appear in
      */
     default Item.Settings group(OwoItemGroup group) {
+        return groupSupplier(() -> group);
+    }
+
+    /**
+     * @param groupSupplier The supplier of the item group this item should appear in
+     */
+    default Item.Settings groupSupplier(Supplier<@NotNull OwoItemGroup> groupSupplier) {
         throw new IllegalStateException("Implemented in mixin.");
     }
 
     default OwoItemGroup group() {
+        throw new IllegalStateException("Implemented in mixin.");
+    }
+
+    default Supplier<OwoItemGroup> groupSupplier() {
         throw new IllegalStateException("Implemented in mixin.");
     }
 

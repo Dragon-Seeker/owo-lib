@@ -5,35 +5,37 @@ import io.wispforest.owo.itemgroup.OwoItemGroup;
 import io.wispforest.owo.itemgroup.OwoItemSettingsExtension;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 @Mixin(Item.Settings.class)
 public class ItemSettingsMixin implements OwoItemSettingsExtension {
-    private OwoItemGroup owo$group = null;
+    @Nullable
+    private Supplier<@NotNull OwoItemGroup> owo$groupSupplier = null;
     private int owo$tab = 0;
     private BiConsumer<Item, ItemGroup.Entries> owo$stackGenerator = null;
     private boolean owo$trackUsageStat = false;
 
     @Override
     public Item.Settings group(ItemGroupReference ref) {
-        this.owo$group = ref.group();
+        this.owo$groupSupplier = ref.group();
         this.owo$tab = ref.tab();
 
         return (Item.Settings)(Object) this;
     }
 
     @Override
-    public Item.Settings group(OwoItemGroup group) {
-        this.owo$group = group;
-
-        return (Item.Settings)(Object) this;
+    public Supplier<OwoItemGroup> groupSupplier() {
+        return owo$groupSupplier;
     }
 
     @Override
     public OwoItemGroup group() {
-        return owo$group;
+        return owo$groupSupplier.get();
     }
 
     @Override

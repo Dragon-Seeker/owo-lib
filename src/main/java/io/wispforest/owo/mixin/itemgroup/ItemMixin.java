@@ -4,20 +4,31 @@ import io.wispforest.owo.itemgroup.OwoItemGroup;
 import io.wispforest.owo.util.pond.OwoItemExtensions;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.registry.entry.RegistryEntry;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 @Mixin(Item.class)
-public class ItemMixin implements OwoItemExtensions {
+public abstract class ItemMixin implements OwoItemExtensions {
+
+    @Shadow
+    @Deprecated
+    public abstract RegistryEntry.Reference<Item> getRegistryEntry();
 
     @Nullable
     protected ItemGroup owo$group = null;
+
+    @Nullable
+    protected Supplier<@NotNull OwoItemGroup> owo$groupSupplier = null;
 
     @Unique
     private int owo$tab = 0;
@@ -32,7 +43,7 @@ public class ItemMixin implements OwoItemExtensions {
     private void grabTab(Item.Settings settings, CallbackInfo ci) {
         this.owo$tab = settings.tab();
         this.owo$stackGenerator = settings.stackGenerator();
-        this.owo$group = settings.group();
+        this.owo$groupSupplier = settings.groupSupplier();
         this.owo$trackUsageStat = settings.shouldTrackUsageStat();
     }
 
@@ -53,6 +64,16 @@ public class ItemMixin implements OwoItemExtensions {
 
     @Override
     public @Nullable ItemGroup owo$group() {
+        if(owo$groupSupplier != null && this.owo$group == null) {
+            var itemGroup = owo$groupSupplier.get();
+
+            if(itemGroup == null) {
+                throw new IllegalStateException("The given supplied OwoItemGroup was null for a given item! [Item: " + this.getRegistryEntry().getIdAsString() + "]");
+            }
+
+            this.owo$group = itemGroup;
+        }
+
         return this.owo$group;
     }
 
