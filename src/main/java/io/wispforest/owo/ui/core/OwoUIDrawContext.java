@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.wispforest.owo.client.OwoClient;
 import io.wispforest.owo.mixin.ui.DrawContextInvoker;
 import io.wispforest.owo.ui.event.WindowResizeCallback;
+import io.wispforest.owo.ui.util.MatrixStackTransformer;
 import io.wispforest.owo.ui.util.NinePatchTexture;
 import io.wispforest.owo.util.pond.OwoTessellatorExtension;
 import net.minecraft.client.MinecraftClient;
@@ -157,21 +158,29 @@ public class OwoUIDrawContext extends DrawContext {
     public enum TextAnchor {
         TOP_RIGHT, BOTTOM_RIGHT, TOP_LEFT, BOTTOM_LEFT
     }
+
     public void drawLine(int x1, int y1, int x2, int y2, double thiccness, Color color) {
+        drawLine(x1, y1, x2, y2, thiccness, color.argb());
+    }
+
+    public void drawLine(int x1, int y1, int x2, int y2, double thiccness, int color) {
         drawLine(RenderLayer.getGui(), x1, y1, x2, y2, thiccness, color);
     }
 
     public void drawLine(RenderLayer layer, int x1, int y1, int x2, int y2, double thiccness, Color color) {
+        drawLine(layer, x1, y1, x2, y2, thiccness, color.argb());
+    }
+
+    public void drawLine(RenderLayer layer, int x1, int y1, int x2, int y2, double thiccness, int color) {
         var offset = new Vector2d(x2 - x1, y2 - y1).perpendicular().normalize().mul(thiccness * .5d);
 
         var buffer = vertexConsumers().getBuffer(layer);
         var matrix = this.getMatrices().peek().getPositionMatrix();
-        int vColor = color.argb();
 
-        buffer.vertex(matrix, (float) (x1 + offset.x), (float) (y1 + offset.y), 0).color(vColor);
-        buffer.vertex(matrix, (float) (x1 - offset.x), (float) (y1 - offset.y), 0).color(vColor);
-        buffer.vertex(matrix, (float) (x2 - offset.x), (float) (y2 - offset.y), 0).color(vColor);
-        buffer.vertex(matrix, (float) (x2 + offset.x), (float) (y2 + offset.y), 0).color(vColor);
+        buffer.vertex(matrix, (float) (x1 + offset.x), (float) (y1 + offset.y), 0).color(color);
+        buffer.vertex(matrix, (float) (x1 - offset.x), (float) (y1 - offset.y), 0).color(color);
+        buffer.vertex(matrix, (float) (x2 - offset.x), (float) (y2 - offset.y), 0).color(color);
+        buffer.vertex(matrix, (float) (x2 + offset.x), (float) (y2 + offset.y), 0).color(color);
     }
 
     public void drawCircle(int centerX, int centerY, int segments, double radius, Color color) {

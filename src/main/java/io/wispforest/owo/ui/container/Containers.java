@@ -64,4 +64,8 @@ public final class Containers {
         return new RenderEffectWrapper<>(child);
     }
 
+    public static <C extends Component> SelectableContainer<C> selectable(Sizing horizontalSizing, Sizing verticalSizing, C child) {
+        return new SelectableContainer<>(horizontalSizing, verticalSizing, child);
+    }
+
 }
