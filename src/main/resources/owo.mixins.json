@@ -4,7 +4,6 @@
   "package": "io.wispforest.owo.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "BufferBuilderAccessor",
     "CachedRegistryInfoGetterAccessor",
     "ClientConnectionMixin",
     "ComponentTypeBuilderMixin",
@@ -15,7 +14,6 @@
     "NbtCompoundMixin",
     "PacketByteBufMixin",
     "RegistryOpsAccessor",
-    "ScreenAccessor",
     "ScreenHandlerInvoker",
     "ScreenHandlerMixin",
     "ServerCommonNetworkHandlerAccessor",
@@ -50,6 +48,8 @@
     "ui.access.BlockEntityAccessor"
   ],
   "client": [
+    "BufferBuilderAccessor",
+    "ScreenAccessor",
     "ClientCommonNetworkHandlerAccessor",
     "ClientConfigurationNetworkHandlerMixin",
     "ClientLoginNetworkHandlerAccessor",
