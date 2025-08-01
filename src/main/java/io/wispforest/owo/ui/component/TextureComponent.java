@@ -50,13 +50,6 @@ public class TextureComponent extends BaseComponent {
 
     @Override
     public void draw(OwoUIDrawContext context, int mouseX, int mouseY, float partialTicks, float delta) {
-        RenderSystem.enableDepthTest();
-
-        if (this.blend) {
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-        }
-
         var matrices = context.getMatrices();
         matrices.push();
         matrices.translate(x, y, 0);
